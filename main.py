@@ -6,6 +6,8 @@ def main() :
 
     if config.task == 'mnist':
         experiment = MNIST_Experiment(config)
+    elif config.task == 'mnist_cnn':
+        experiment = MNIST_Experiment(config, use_cnn=True)
     else:
         raise ValueError('Task not found')
 

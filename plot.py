@@ -107,7 +107,8 @@ class DistribAccuraciesPlot():
 
 class AvgAccuraciesPlot():
 
-    def __init__(self, avg_inc_accs, exp_path, output_file='avg_increase.png'):
+    def __init__(self, warmup_epochs, avg_inc_accs, exp_path, output_file='avg_increase.png'):
+        self.warmup_epochs = warmup_epochs
         self.avg_inc_accs = avg_inc_accs
         self.exp_path = exp_path
         self.output_file = output_file
@@ -115,7 +116,7 @@ class AvgAccuraciesPlot():
     def save(self):
         plt.clf()
 
-        plt.plot(self.avg_inc_accs, label='Average Increase in Accuracy')
+        plt.plot(self.warmup_epochs, self.avg_inc_accs, label='Average Increase in Accuracy')
         plt.xlabel('Epoch to start averaging model weights')
         plt.ylabel('Accuracy Increase in Accuracy (%)')
         plt.title('Average Increase in Accuracy of Averaged Models')

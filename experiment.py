@@ -157,7 +157,7 @@ class Experiment():
 
         mean_model_accs = sum(dist_model_accs) / self.distribution_samples
 
-        return DistribAccuraciesPlot(dist_model_accs, self.warmup_epochs, dist_avg_model_accs, mean_model_accs, self.exp_path), AvgAccuraciesPlot(avg_inc_accs, self.exp_path)
+        return DistribAccuraciesPlot(dist_model_accs, self.warmup_epochs, dist_avg_model_accs, mean_model_accs, self.exp_path), AvgAccuraciesPlot(self.warmup_epochs, avg_inc_accs, self.exp_path)
 
 
 
