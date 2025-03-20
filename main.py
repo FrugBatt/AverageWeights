@@ -6,8 +6,13 @@ def main() :
 
     if config.task == 'mnist':
         experiment = MNIST_Experiment(config)
-        plot, avg_model = experiment.train()
-        plot.plot_metrics()
+    else:
+        raise ValueError('Task not found')
+
+    plot1, plot2 = experiment.run()
+
+    plot1.save()
+    plot2.save()
 
 if __name__ == '__main__':
     main()

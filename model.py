@@ -9,6 +9,10 @@ class MNIST_MLP(nn.Module):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=1)
 
+    def reset_parameters(self):
+        self.fc1.reset_parameters()
+        self.fc2.reset_parameters()
+
     def forward(self, x):
         x = x.view(-1, 28*28)
         x = self.relu(self.fc1(x))
@@ -24,6 +28,11 @@ class MNIST_CNN(nn.Module):
         self.fc1 = nn.Linear(64*5*5, n_classes)
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=1)
+
+    def reset_parameters(self):
+        self.conv1.reset_parameters()
+        self.conv2.reset_parameters()
+        self.fc1.reset_parameters()
 
     def forward(self, x):
         x = self.relu(self.conv1(x))

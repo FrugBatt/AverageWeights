@@ -1,18 +1,23 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-class Plot:
+class MetricsPlot:
 
-    def __init__(self, batch_train_losses, train_losses, val_losses, batch_train_accuracies, train_accuracies, val_accuracies, plot_batch_every=50):
+    def __init__(self, batch_train_losses, train_losses, val_losses, batch_train_accuracies, train_accuracies, val_accuracies, exp_path, plot_batch_every=50, output_file='training_metrics.png'):
         self.batch_train_losses = batch_train_losses
         self.train_losses = train_losses
         self.val_losses = val_losses
         self.batch_train_accuracies = batch_train_accuracies
         self.train_accuracies = train_accuracies
         self.val_accuracies = val_accuracies
+        self.exp_path = exp_path
         self.plot_batch_every = plot_batch_every
+        self.output_file = output_file
 
-    def plot_metrics(self):
+    def save(self):
+        plt.clf()
+
         # Number of epochs and batches
         n_epochs = len(self.train_losses)
         n_batches = len(self.batch_train_losses)
@@ -51,4 +56,69 @@ class Plot:
         # Title and layout
         plt.title('Training and Validation Loss & Accuracy')
         plt.tight_layout()
-        plt.show()
+        # plt.show()
+        
+        # Save plot
+        plt.savefig(os.path.join(self.exp_path, self.output_file))
+
+class AvgModelPlot():
+
+    def __init__(self, warmup_epochs, accuracies, test_acc, exp_path, output_file='average_model.png'):
+        self.warmup_epochs = warmup_epochs
+        self.accuracies = accuracies
+        self.test_acc = test_acc
+        self.exp_path = exp_path
+        self.output_file = output_file
+
+    def save(self):
+        plt.clf()
+        plt.plot(self.warmup_epochs, self.accuracies, label='Average Model Accuracy')
+        plt.axhline(y=self.test_acc, color='r', linestyle='--', label='Unmodified Model Accuracy')
+        plt.xlabel('Epoch to start averaging')
+        plt.ylabel('Accuracy (%)')
+        plt.title('Accuracy of Averaged Models')
+        plt.legend()
+
+        plt.savefig(os.path.join(self.exp_path, self.output_file))
+
+class DistribAccuraciesPlot():
+
+    def __init__(self, dist_model_accs, warmup_epochs, dist_avg_model_accs, test_acc, exp_path, output_file='distribution_avg.png'):
+        self.dist_model_accs = dist_model_accs
+        self.warmup_epochs = warmup_epochs
+        self.dist_avg_model_accs = dist_avg_model_accs
+        self.test_acc = test_acc
+        self.exp_path = exp_path
+        self.output_file = output_file
+
+    def save(self):
+        plt.clf()
+
+        plt.hist(self.dist_model_accs, bins=20, alpha=0.5, label='Model Accuracies')
+        for i in range(len(self.warmup_epochs)):
+            plt.hist(self.dist_avg_model_accs[i], bins=20, alpha=0.5, label=f'Avg Model Accuracies starting from epoch {self.warmup_epochs[i]}')
+        plt.axvline(x=self.test_acc, color='r', linestyle='--', label='Unmodified Model Accuracy')
+        plt.xlabel('Accuracy (%)')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of Model Accuracies')
+        plt.legend()
+
+        plt.savefig(os.path.join(self.exp_path, self.output_file))
+
+class AvgAccuraciesPlot():
+
+    def __init__(self, avg_inc_accs, exp_path, output_file='avg_increase.png'):
+        self.avg_inc_accs = avg_inc_accs
+        self.exp_path = exp_path
+        self.output_file = output_file
+
+    def save(self):
+        plt.clf()
+
+        plt.plot(self.avg_inc_accs, label='Average Increase in Accuracy')
+        plt.xlabel('Epoch to start averaging model weights')
+        plt.ylabel('Accuracy Increase in Accuracy (%)')
+        plt.title('Average Increase in Accuracy of Averaged Models')
+        plt.legend()
+        
+        plt.savefig(os.path.join(self.exp_path, self.output_file))
