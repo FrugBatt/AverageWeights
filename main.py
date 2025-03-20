@@ -1,5 +1,5 @@
 from config import load_config
-from experiment import MNIST_Experiment
+from experiment import MNIST_Experiment, CIFAR_Experiment
 
 def main() :
     config = load_config()
@@ -8,6 +8,10 @@ def main() :
         experiment = MNIST_Experiment(config)
     elif config.task == 'mnist_cnn':
         experiment = MNIST_Experiment(config, use_cnn=True)
+    elif config.task == 'cifar10':
+        experiment = CIFAR_Experiment(config)
+    elif config.task == 'cifar100':
+        experiment = CIFAR_Experiment(config, cifar100=True)
     else:
         raise ValueError('Task not found')
 

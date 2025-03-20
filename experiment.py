@@ -1,11 +1,12 @@
 import torch
+import torch.nn.functional as F
 import copy
-from torch.utils.data import dataloader
 from tqdm import tqdm
 
+
 from plot import MetricsPlot, AvgModelPlot, DistribAccuraciesPlot,  AvgAccuraciesPlot 
-from data import MNIST_data_loaders
-from model import MNIST_MLP, MNIST_CNN
+from data import MNIST_data_loaders, CIFAR10_data_loaders, CIFAR100_data_loaders
+from model import MNIST_MLP, MNIST_CNN, CIFAR_CNN
 
 class Experiment():
 
@@ -71,7 +72,8 @@ class Experiment():
 
                 batch_size = len(images)
                 self.optimizer.zero_grad()
-                outputs = self.model(images)
+                logits = self.model(images)
+                outputs = F.softmax(logits, dim=1)
                 loss = self.criterion(outputs, labels)
                 loss.backward()
                 self.optimizer.step()
@@ -115,7 +117,8 @@ class Experiment():
         with torch.no_grad():
             for images, labels in dataloader:
                 images, labels = images.to(self.device), labels.to(self.device)
-                outputs = model(images)
+                logits = model(images)
+                outputs = F.softmax(logits, dim=1)
                 val_loss += self.criterion(outputs, labels).item() / len(images)
                 _, pred = outputs.max(1)
                 total += labels.size(0)
@@ -143,7 +146,7 @@ class Experiment():
 
             _, avg_models = self.train()
 
-            test_loss, test_acc = self.validate(dataloader=self.test_loader)
+            _, test_acc = self.validate(dataloader=self.test_loader)
             dist_model_accs.append(test_acc)
 
             for i in range(len(self.warmup_epochs)):
@@ -168,6 +171,19 @@ class MNIST_Experiment(Experiment):
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=config.lr)
         self.criterion = torch.nn.CrossEntropyLoss()
         self.train_loader, self.val_loader, self.test_loader = MNIST_data_loaders(config)
+        self.n_epochs = config.num_epochs
+        self.warmup_epochs = config.warmup_epochs
+        self.distribution_samples = config.distribution_samples
+        self.exp_path = config.exp_path
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+class CIFAR_Experiment(Experiment):
+
+    def __init__(self, config, cifar100 = False):
+        self.model = CIFAR_CNN() if not cifar100 else CIFAR_CNN(n_classes=100)
+        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=config.lr)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        self.train_loader, self.val_loader, self.test_loader = CIFAR10_data_loaders(config) if not cifar100 else CIFAR100_data_loaders(config)
         self.n_epochs = config.num_epochs
         self.warmup_epochs = config.warmup_epochs
         self.distribution_samples = config.distribution_samples
